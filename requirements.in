@@ -1,4 +1,8 @@
-logzero
+loguru
 beautifulsoup4
 lxml
 pydantic
+jupyter
+pretty-jupyter
+backports.tarfile # pretty-jupyter: https://github.com/pypa/setuptools/issues/4747
+jupytext

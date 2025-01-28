@@ -1,6 +1,6 @@
 import requests
 import sqlite3
-from logzero import logger
+from loguru import logger
 
 class DBCachedDownload:
 
@@ -15,10 +15,10 @@ class DBCachedDownload:
         self.cursor.execute('SELECT content FROM cache WHERE url = ?', (url,))
         row = self.cursor.fetchone()
         if row:
-            logger.info('Cache hit')
+            logger.debug(f'Cache hit: {url}')
             return row[0]
         else:
-            logger.info('Cache miss')
+            logger.debug(f'Cache miss: {url}')
             response = requests.get(url)
             self.cursor.execute('INSERT INTO cache (url, content) VALUES (?, ?)', (url, response.content))
             self.conn.commit()
