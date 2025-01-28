@@ -1,5 +1,7 @@
+all: create_html
+
 init:
-	zstd -d data/data.sqlite.zst -o data/data.sqlite
+	[ -f data/data.sqlite ] || zstd -d data/data.sqlite.zst -o data/data.sqlite && touch src/paper_info.py
 
 fetch_paper_info: data/data.sqlite
 
@@ -16,7 +18,7 @@ archive:
 clean:
 	rm -f data/data.sqlite data/papers.csv data/index.html
 
-data/data.sqlite: src/paper_info.py init
+data/data.sqlite: src/paper_info.py
 	LOGURU_LEVEL=INFO python3 src/paper_info.py
 
 data/papers.csv: data/data.sqlite src/json_to_csv.py
