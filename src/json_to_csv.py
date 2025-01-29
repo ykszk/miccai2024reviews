@@ -13,17 +13,24 @@ def main():
     rows = []
     for info in list_info:
         logger.debug(info.url)
+        early_accept = info.early_accept()
         row = {
             "id": info.id,
             "title": info.title,
             "url": info.url,
             "authors": "|".join(info.authors),
             "topics": "|".join(info.topics),
+            "early_accept": early_accept,
             "category": category_dict.get(info.id, None),
         }
         for i, review in enumerate(info.reviews):
-            row[f"review_score_{i}"] = review.confidence_score()
-            row[f'post_rebuttal_score_{i}'] = review.post_rebuttal_confidence_score()
+            row[f"review_score_{i}"] = review.rate_score()
+            cs = review.post_rebuttal_rate_score()
+            # post rebuttal score is `N/A` if the score is the same as before rebuttal
+            if cs is None and not early_accept:
+                cs = review.confidence_score()
+            row[f'post_rebuttal_score_{i}'] = cs
+            row[f"confidence_score_{i}"] = review.confidence_score()
         rows.append(row)
     df = pd.DataFrame(rows)
     df.to_csv("data/papers.csv", index=False)

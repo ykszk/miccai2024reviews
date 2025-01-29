@@ -68,15 +68,21 @@ class Review(RootModel):
         match = re.search(pattern, confidence)
         assert match is not None, f"Confidence score not found: {confidence}"
         return int(match.group(1))
+    
+    def rate(self) -> str:
+        return self.root[-5]
+    
+    def rate_score(self) -> int:
+        return self._extract_confidence_score(self.rate())
 
     def confidence_score(self) -> int:
         return self._extract_confidence_score(self.confidence())
 
-    def post_rebuttal_confidence(self) -> str:
+    def post_rebuttal_rate(self) -> str:
         return self.root[-2]
 
-    def post_rebuttal_confidence_score(self) -> Optional[int]:
-        c = self.post_rebuttal_confidence()
+    def post_rebuttal_rate_score(self) -> Optional[int]:
+        c = self.post_rebuttal_rate()
         if c == "N/A":
             return None
         return self._extract_confidence_score(c)
@@ -99,6 +105,9 @@ class PaperInfo(BaseModel):
     reviews: List[Review]
     meta_reviews: List[MetaReview]
     topics: List[str]
+
+    def early_accept(self) -> bool:
+        return len(self.meta_reviews) == 0
 
     @classmethod
     def from_source(cls, source: str, url: str) -> "PaperInfo":

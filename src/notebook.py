@@ -14,6 +14,8 @@ def tag(tag, content):
 def h2(line):
     tag("h2", line)
 
+display(HTML("<style>.main-container { max-width:1600px !important; }</style>"))
+
 sns.set_theme(context='notebook', style='whitegrid', font='serif', rc={'figure.figsize':(8, 6), 'figure.dpi': 100})
 
 html = '''<p>Analysis based on data collected from MICCAI 2024 <a href="https://papers.miccai.org/miccai-2024/">open access web site</a>.</p>
@@ -30,7 +32,7 @@ df.set_index("id", inplace=True)
 #%%
 h2("Paper Categories")
 categories = pd.DataFrame(df['category'].value_counts())
-display(HTML(categories.T.to_html()) )
+display(HTML('<div style="overflow-x: scroll">' + categories.T.to_html() + "</div>"))
 
 #%%
 categories_count_above_20 = categories[df['category'].value_counts() > 20]
@@ -45,7 +47,6 @@ ax = sns.histplot(data=df, x='mean_review_score', element="step")
 h2("Review Score of Early Accept Papers")
 rebuttal_score_cols = [c for c in df.columns if "post_rebuttal_score" in c]
 df['mean_rebuttal_score'] = df[rebuttal_score_cols].mean(axis=1)
-df['early_accept'] = df['mean_rebuttal_score'].isna()
 ax = sns.histplot(data=df, x='mean_review_score', hue='early_accept', element="step")
 
 
@@ -67,20 +68,19 @@ df_late = df.dropna(subset=['mean_rebuttal_score'])
 ax = sns.jointplot(data=df_late, x='mean_review_score', y='mean_rebuttal_score', kind='reg')
 
 # %%
-h2("Papers with the best review score")
+h2("Papers with the best review score (top 10%)")
 top_review_scores = df.sort_values('mean_review_score', ascending=False)
-cols = ['title', 'url', 'authors', 'category', 'mean_review_score', 'mean_rebuttal_score']
-best_score = df['mean_review_score'].max()
-df_top = top_review_scores[cols][top_review_scores['mean_review_score'] == best_score]
+cols = ['title', 'url', 'authors', 'category', 'early_accept', 'mean_review_score', 'mean_rebuttal_score']
+df_top = top_review_scores[cols].head(int(len(df) * 0.1))
 df_top.set_index('title', inplace=True)
 df_top['url'] = df_top['url'].apply(lambda x: f'<a href="{x}" target="_blank">link</a>')
 display(HTML(df_top.to_html(escape=False)))
 
 #%%
-h2("Papers with the best post-rebuttal review score")
+h2("Papers with the best post-rebuttal review score (top 10%)")
 top_rebuttal_scores = df.sort_values('mean_rebuttal_score', ascending=False)
 best_rebuttal_score = df['mean_rebuttal_score'].max()
-df_top_rebuttal = top_rebuttal_scores[cols][top_rebuttal_scores['mean_rebuttal_score'] == best_rebuttal_score]
+df_top_rebuttal = top_rebuttal_scores[cols].head(int(len(df) * 0.1))
 df_top_rebuttal.set_index('title', inplace=True)
 df_top_rebuttal['url'] = df_top_rebuttal['url'].apply(lambda x: f'<a href="{x}" target="_blank">link</a>')
 display(HTML(df_top_rebuttal.to_html(escape=False)))
